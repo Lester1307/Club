@@ -5,8 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ClubHub — Sports Club Manager</title>
 <meta name="theme-color" content="#6366f1">
-<link rel="manifest" href='data:application/manifest+json,{"name":"ClubHub — Sports Club Manager","short_name":"ClubHub","description":"Manage your sports club: teams, members, schedule and payments.","start_url":".","scope":".","display":"standalone","background_color":"#0f172a","theme_color":"#6366f1","icons":[{"src":"data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 512 512%27%3E%3Crect width=%27512%27 height=%27512%27 rx=%2796%27 fill=%27%236366f1%27/%3E%3Ctext x=%2750%25%27 y=%2754%25%27 font-size=%27300%27 text-anchor=%27middle%27 dominant-baseline=%27middle%27%3E%F0%9F%8F%86%3C/text%3E%3C/svg%3E","sizes":"512x512","type":"image/svg+xml","purpose":"any maskable"}]}'>
+<link rel="manifest" href='data:application/manifest+json,{"name":"ClubHub — Sports Club Manager","short_name":"ClubHub","start_url":".","scope":".","display":"standalone","background_color":"#0f172a","theme_color":"#6366f1","icons":[{"src":"data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 512 512%27%3E%3Crect width=%27512%27 height=%27512%27 rx=%2796%27 fill=%27%236366f1%27/%3E%3Ctext x=%2750%25%27 y=%2754%25%27 font-size=%27300%27 text-anchor=%27middle%27 dominant-baseline=%27middle%27%3E%F0%9F%8F%86%3C/text%3E%3C/svg%3E","sizes":"512x512","type":"image/svg+xml","purpose":"any maskable"}]}'>
 <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='96' fill='%236366f1'/%3E%3Ctext x='50%25' y='54%25' font-size='300' text-anchor='middle' dominant-baseline='middle'%3E%F0%9F%8F%86%3C/text%3E%3C/svg%3E">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
   :root{
     --bg:#0f172a; --surface:#1e293b; --surface2:#273449;
@@ -17,40 +18,65 @@
   *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',system-ui,sans-serif}
   body{background:var(--bg);color:var(--text);min-height:100vh}
   .app{display:flex;min-height:100vh}
+  .hidden{display:none!important}
 
+  /* AUTH */
+  .auth-wrap{min-height:100vh;display:grid;place-items:center;padding:20px;
+    background:radial-gradient(circle at 20% 20%,rgba(99,102,241,.25),transparent 40%),
+               radial-gradient(circle at 80% 80%,rgba(34,211,238,.2),transparent 40%),var(--bg)}
+  .auth-card{background:var(--surface);border:1px solid var(--border);border-radius:22px;
+    padding:36px 32px;width:min(410px,94vw);box-shadow:0 30px 80px rgba(0,0,0,.4)}
+  .auth-logo{display:flex;align-items:center;gap:10px;font-size:24px;font-weight:800;justify-content:center;margin-bottom:6px}
+  .auth-logo .dot{width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,var(--primary),var(--primary2));display:grid;place-items:center;font-size:20px}
+  .auth-sub{text-align:center;color:var(--muted);font-size:14px;margin-bottom:24px}
+  .field{margin-bottom:14px}
+  .field label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+  .field input,.field select{width:100%;padding:12px 14px;background:var(--bg);border:1px solid var(--border);
+    border-radius:11px;color:var(--text);font-size:14px}
+  .field input:focus,.field select:focus{outline:none;border-color:var(--primary)}
+  .auth-btn{width:100%;background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;border:none;
+    padding:13px;border-radius:11px;font-weight:700;cursor:pointer;font-size:15px;margin-top:6px;transition:.2s}
+  .auth-btn:hover{opacity:.9}
+  .divider{display:flex;align-items:center;gap:12px;color:var(--muted);font-size:12px;margin:18px 0}
+  .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
+  .gbtn{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;background:#fff;color:#3c4043;
+    border:none;padding:12px;border-radius:11px;font-weight:600;cursor:pointer;font-size:14px}
+  .gbtn:hover{background:#f1f3f4}
+  .auth-switch{text-align:center;font-size:13px;color:var(--muted);margin-top:18px}
+  .auth-switch a{color:var(--primary);cursor:pointer;font-weight:600}
+  .err{background:rgba(239,68,68,.12);color:#fca5a5;padding:10px 12px;border-radius:10px;font-size:13px;margin-bottom:14px}
+  #gbtn-container{display:flex;justify-content:center}
+
+  /* SIDEBAR */
   .sidebar{width:250px;background:var(--surface);border-right:1px solid var(--border);
     padding:24px 16px;display:flex;flex-direction:column;gap:8px;position:sticky;top:0;height:100vh}
   .logo{display:flex;align-items:center;gap:10px;font-size:22px;font-weight:800;margin-bottom:28px;padding:0 8px}
-  .logo .dot{width:34px;height:34px;border-radius:10px;
-    background:linear-gradient(135deg,var(--primary),var(--primary2));
-    display:grid;place-items:center;font-size:18px}
-  .nav-item{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;
-    color:var(--muted);cursor:pointer;font-weight:500;transition:.2s;font-size:15px}
+  .logo .dot{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--primary),var(--primary2));display:grid;place-items:center;font-size:18px}
+  .nav-item{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;color:var(--muted);cursor:pointer;font-weight:500;transition:.2s;font-size:15px}
   .nav-item:hover{background:var(--surface2);color:var(--text)}
   .nav-item.active{background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff}
   .nav-item .ic{font-size:18px;width:22px;text-align:center}
-  .side-foot{margin-top:auto;padding:12px 14px;border-top:1px solid var(--border);
-    display:flex;align-items:center;gap:10px;font-size:13px}
-  .avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--primary));
-    display:grid;place-items:center;font-weight:700;color:#0f172a}
+  .side-foot{margin-top:auto;padding-top:12px;border-top:1px solid var(--border)}
+  .side-user{display:flex;align-items:center;gap:10px;font-size:13px;padding:8px 6px}
+  .avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--primary));display:grid;place-items:center;font-weight:700;color:#0f172a;overflow:hidden}
+  .avatar img{width:100%;height:100%;object-fit:cover}
+  .logout{width:100%;background:var(--surface2);color:var(--red);border:none;padding:10px;border-radius:10px;cursor:pointer;font-size:13px;font-weight:600;margin-top:8px}
 
   .main{flex:1;padding:28px 34px;overflow-y:auto}
   .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:26px;flex-wrap:wrap;gap:14px}
   .topbar h1{font-size:26px;font-weight:800}
   .topbar p{color:var(--muted);font-size:14px;margin-top:2px}
-  .btn{background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;border:none;
-    padding:11px 20px;border-radius:12px;font-weight:600;cursor:pointer;font-size:14px;transition:.2s}
+  .btn{background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;border:none;padding:11px 20px;border-radius:12px;font-weight:600;cursor:pointer;font-size:14px;transition:.2s}
   .btn:hover{opacity:.9;transform:translateY(-1px)}
   .btn.ghost{background:var(--surface2);}
 
   .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:18px;margin-bottom:26px}
   .stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;position:relative;overflow:hidden}
-  .stat::after{content:'';position:absolute;right:-20px;top:-20px;width:80px;height:80px;border-radius:50%;
-    background:linear-gradient(135deg,var(--primary),var(--primary2));opacity:.15}
+  .stat::after{content:'';position:absolute;right:-20px;top:-20px;width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--primary2));opacity:.15}
   .stat .lbl{color:var(--muted);font-size:13px;font-weight:500}
   .stat .val{font-size:30px;font-weight:800;margin-top:6px}
   .stat .chg{font-size:12px;margin-top:6px}
-  .up{color:var(--green)} .down{color:var(--red)}
+  .up{color:var(--green)}
 
   .grid{display:grid;grid-template-columns:1.4fr 1fr;gap:20px;margin-bottom:20px}
   @media(max-width:900px){.grid{grid-template-columns:1fr}.sidebar{display:none}}
@@ -81,53 +107,89 @@
   .table td{padding:13px 12px;border-bottom:1px solid var(--border);font-size:14px}
   .table tr:hover td{background:var(--surface2)}
 
+  .news-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:18px}
+  .news-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;transition:.2s}
+  .news-card:hover{transform:translateY(-3px);border-color:var(--primary)}
+  .news-banner{height:120px;display:grid;place-items:center;font-size:44px}
+  .news-body{padding:16px}
+  .news-body h3{font-size:16px;margin-bottom:6px}
+  .news-body p{color:var(--muted);font-size:13px;line-height:1.5}
+  .news-date{color:var(--accent);font-size:12px;font-weight:600;margin-bottom:8px;display:block}
+
   .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;place-items:center;z-index:50;backdrop-filter:blur(3px)}
   .modal-bg.show{display:grid}
   .modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:26px;width:min(440px,92vw)}
   .modal h3{margin-bottom:18px;font-size:19px}
-  .field{margin-bottom:14px}
-  .field label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
-  .field input,.field select{width:100%;padding:11px 13px;background:var(--bg);border:1px solid var(--border);
-    border-radius:10px;color:var(--text);font-size:14px}
-  .field input:focus,.field select:focus{outline:none;border-color:var(--primary)}
   .modal-actions{display:flex;gap:10px;margin-top:8px}
   .modal-actions .btn{flex:1}
-
   .progress{height:8px;background:var(--surface2);border-radius:20px;overflow:hidden;margin-top:8px}
   .progress > div{height:100%;background:linear-gradient(90deg,var(--primary),var(--accent))}
 </style>
 </head>
 <body>
-<div class="app">
 
+<!-- ================= AUTH SCREEN ================= -->
+<div class="auth-wrap" id="authScreen">
+  <div class="auth-card">
+    <div class="auth-logo"><div class="dot">🏆</div> ClubHub</div>
+    <div class="auth-sub" id="authSub">Sign in to manage your club</div>
+    <div class="err hidden" id="authErr"></div>
+
+    <!-- LOGIN -->
+    <div id="loginForm">
+      <div class="field"><label>Email</label><input id="li-email" type="email" placeholder="you@club.com"></div>
+      <div class="field"><label>Password</label><input id="li-pass" type="password" placeholder="••••••••"></div>
+      <button class="auth-btn" onclick="doLogin()">Sign in</button>
+    </div>
+
+    <!-- SIGNUP -->
+    <div id="signupForm" class="hidden">
+      <div class="field"><label>Full name</label><input id="su-name" placeholder="Alex Ray"></div>
+      <div class="field"><label>Club name</label><input id="su-club" placeholder="Riverside FC"></div>
+      <div class="field"><label>Email</label><input id="su-email" type="email" placeholder="you@club.com"></div>
+      <div class="field"><label>Password</label><input id="su-pass" type="password" placeholder="Min 6 characters"></div>
+      <button class="auth-btn" onclick="doSignup()">Create account</button>
+    </div>
+
+    <div class="divider">or continue with</div>
+    <div id="gbtn-container"></div>
+    <button class="gbtn" id="gbtnFallback" onclick="googleDemo()">
+      <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.6l6.7-6.7C35.6 2.4 30.2 0 24 0 14.6 0 6.4 5.4 2.6 13.2l7.8 6.1C12.2 13.6 17.6 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.5 3-2.2 5.5-4.7 7.2l7.3 5.7c4.3-4 6.9-9.9 6.9-17.4z"/><path fill="#FBBC05" d="M10.4 28.3c-.5-1.4-.7-2.8-.7-4.3s.3-2.9.7-4.3l-7.8-6.1C1 16.9 0 20.3 0 24s1 7.1 2.6 10.4l7.8-6.1z"/><path fill="#34A853" d="M24 48c6.2 0 11.4-2 15.2-5.5l-7.3-5.7c-2 1.4-4.7 2.3-7.9 2.3-6.4 0-11.8-4.1-13.6-9.8l-7.8 6.1C6.4 42.6 14.6 48 24 48z"/></svg>
+      Continue with Google
+    </button>
+
+    <div class="auth-switch" id="authSwitch">
+      Don't have an account? <a onclick="toggleAuth()">Sign up</a>
+    </div>
+  </div>
+</div>
+
+<!-- ================= DASHBOARD APP ================= -->
+<div class="app hidden" id="appScreen">
   <aside class="sidebar">
     <div class="logo"><div class="dot">🏆</div> ClubHub</div>
     <div class="nav-item active" data-view="dashboard"><span class="ic">📊</span> Dashboard</div>
     <div class="nav-item" data-view="teams"><span class="ic">🛡️</span> Teams</div>
     <div class="nav-item" data-view="members"><span class="ic">👥</span> Members</div>
     <div class="nav-item" data-view="schedule"><span class="ic">📅</span> Schedule</div>
+    <div class="nav-item" data-view="news"><span class="ic">📰</span> News</div>
     <div class="nav-item" data-view="payments"><span class="ic">💳</span> Payments</div>
     <div class="side-foot">
-      <div class="avatar">AR</div>
-      <div><div style="font-weight:600">Alex Ray</div><div style="color:var(--muted)">Club Admin</div></div>
+      <div class="side-user">
+        <div class="avatar" id="sideAvatar">AR</div>
+        <div><div style="font-weight:600" id="sideName">Alex Ray</div><div style="color:var(--muted)" id="sideRole">Club Admin</div></div>
+      </div>
+      <button class="logout" onclick="logout()">Log out</button>
     </div>
   </aside>
 
   <main class="main">
-
     <section class="view active" id="dashboard">
-      <div class="topbar">
-        <div><h1>Dashboard</h1><p>Welcome back, Alex 👋 Here's what's happening at Riverside FC.</p></div>
-        <button class="btn" onclick="openModal('event')">+ New Event</button>
-      </div>
+      <div class="topbar"><div><h1>Dashboard</h1><p id="welcomeMsg">Welcome back 👋</p></div><button class="btn" onclick="openModal('event')">+ New Event</button></div>
       <div class="stats" id="statCards"></div>
       <div class="grid">
-        <div class="panel">
-          <h2>Upcoming Events <span onclick="go('schedule')">View all →</span></h2>
-          <div id="dashEvents"></div>
-        </div>
-        <div class="panel">
-          <h2>Fee Collection <span>This month</span></h2>
+        <div class="panel"><h2>Upcoming Events <span onclick="go('schedule')">View all →</span></h2><div id="dashEvents"></div></div>
+        <div class="panel"><h2>Fee Collection <span>This month</span></h2>
           <div style="text-align:center;padding:14px 0">
             <div style="font-size:40px;font-weight:800">£4,280</div>
             <div style="color:var(--muted);font-size:13px">of £5,600 collected</div>
@@ -136,58 +198,51 @@
           </div>
         </div>
       </div>
+      <div class="panel"><h2>Latest News <span onclick="go('news')">All news →</span></h2><div id="dashNews"></div></div>
     </section>
 
     <section class="view" id="teams">
-      <div class="topbar">
-        <div><h1>Teams</h1><p>Manage your club's squads and age groups.</p></div>
-        <button class="btn" onclick="openModal('team')">+ Add Team</button>
-      </div>
+      <div class="topbar"><div><h1>Teams</h1><p>Manage your club's squads and age groups.</p></div><button class="btn" onclick="openModal('team')">+ Add Team</button></div>
       <div class="stats" id="teamCards"></div>
     </section>
 
     <section class="view" id="members">
-      <div class="topbar">
-        <div><h1>Members</h1><p>All players, coaches and staff.</p></div>
-        <button class="btn" onclick="openModal('member')">+ Add Member</button>
-      </div>
-      <div class="panel">
-        <table class="table">
-          <thead><tr><th>Name</th><th>Role</th><th>Team</th><th>Status</th></tr></thead>
-          <tbody id="memberRows"></tbody>
-        </table>
-      </div>
+      <div class="topbar"><div><h1>Members</h1><p>All players, coaches and staff.</p></div><button class="btn" onclick="openModal('member')">+ Add Member</button></div>
+      <div class="panel"><table class="table"><thead><tr><th>Name</th><th>Role</th><th>Team</th><th>Status</th></tr></thead><tbody id="memberRows"></tbody></table></div>
     </section>
 
     <section class="view" id="schedule">
-      <div class="topbar">
-        <div><h1>Schedule</h1><p>Practices, games and meetings.</p></div>
-        <button class="btn" onclick="openModal('event')">+ New Event</button>
-      </div>
+      <div class="topbar"><div><h1>Schedule</h1><p>Practices, games and meetings.</p></div><button class="btn" onclick="openModal('event')">+ New Event</button></div>
       <div class="panel"><div id="allEvents"></div></div>
     </section>
 
-    <section class="view" id="payments">
-      <div class="topbar">
-        <div><h1>Payments</h1><p>Membership fees & transactions.</p></div>
-        <button class="btn ghost" onclick="resetData()">Reset Demo Data</button>
-      </div>
-      <div class="panel">
-        <table class="table">
-          <thead><tr><th>Member</th><th>Description</th><th>Amount</th><th>Status</th></tr></thead>
-          <tbody id="payRows"></tbody>
-        </table>
-      </div>
+    <section class="view" id="news">
+      <div class="topbar"><div><h1>News & Announcements</h1><p>Keep your members up to date.</p></div><button class="btn" onclick="openModal('news')">+ Post News</button></div>
+      <div class="news-grid" id="newsGrid"></div>
     </section>
 
+    <section class="view" id="payments">
+      <div class="topbar"><div><h1>Payments</h1><p>Membership fees & transactions.</p></div><button class="btn ghost" onclick="resetData()">Reset Demo Data</button></div>
+      <div class="panel"><table class="table"><thead><tr><th>Member</th><th>Description</th><th>Amount</th><th>Status</th></tr></thead><tbody id="payRows"></tbody></table></div>
+    </section>
   </main>
 </div>
 
-<div class="modal-bg" id="modalBg">
-  <div class="modal" id="modalBox"></div>
-</div>
+<div class="modal-bg" id="modalBg"><div class="modal" id="modalBox"></div></div>
 
 <script>
+/* =========================================================
+   GOOGLE SIGN-IN CONFIG
+   To enable REAL Google login:
+   1. Go to https://console.cloud.google.com/apis/credentials
+   2. Create an OAuth 2.0 Client ID (type: Web application)
+   3. Add your Vercel URL to "Authorized JavaScript origins"
+      e.g. https://your-app.vercel.app
+   4. Paste the Client ID below.
+   Until then, the "Continue with Google" button runs a demo login.
+========================================================= */
+const GOOGLE_CLIENT_ID = ""; // <-- PASTE YOUR CLIENT ID HERE
+
 /* ---------- DEFAULT DATA ---------- */
 const colors=['#6366f1','#22c55e','#f59e0b','#ef4444','#22d3ee','#8b5cf6'];
 const defaults={
@@ -217,138 +272,156 @@ const defaults={
     {name:'Aisha Noor',desc:'Monthly membership',amt:'£45',status:'due'},
     {name:'Leo Park',desc:'Junior membership',amt:'£25',status:'due'},
     {name:'Sam Khan',desc:'Kit fee',amt:'£30',status:'paid'},
+  ],
+  news:[
+    {emoji:'🏆',bg:'linear-gradient(135deg,#f59e0b,#ef4444)',title:'Senior team wins the derby!',date:'18 Jul 2025',body:'A thrilling 3-2 victory over City United secures top spot in the league table. Man of the match: Jordan Blake.'},
+    {emoji:'📢',bg:'linear-gradient(135deg,#6366f1,#8b5cf6)',title:'New training kits have arrived',date:'15 Jul 2025',body:'Collect your new season kit from the clubhouse this week. Please check the sizing chart before pickup.'},
+    {emoji:'🎉',bg:'linear-gradient(135deg,#22c55e,#22d3ee)',title:'Summer fundraiser BBQ',date:'12 Jul 2025',body:'Join us Saturday for the annual club BBQ. All proceeds go towards the new junior pitch. Bring the family!'},
   ]
 };
 
-/* ---------- PERSISTENCE (localStorage) ---------- */
+/* ---------- PERSISTENCE ---------- */
 const load=k=>JSON.parse(localStorage.getItem('clubhub_'+k)||'null')||defaults[k];
 const save=(k,v)=>localStorage.setItem('clubhub_'+k,JSON.stringify(v));
-let teams=load('teams'), members=load('members'), events=load('events'), payments=load('payments');
-function persist(){save('teams',teams);save('members',members);save('events',events);save('payments',payments);}
-function resetData(){
-  ['teams','members','events','payments'].forEach(k=>localStorage.removeItem('clubhub_'+k));
-  location.reload();
+let teams=load('teams'),members=load('members'),events=load('events'),payments=load('payments'),news=load('news');
+function persist(){save('teams',teams);save('members',members);save('events',events);save('payments',payments);save('news',news);}
+function resetData(){['teams','members','events','payments','news'].forEach(k=>localStorage.removeItem('clubhub_'+k));location.reload();}
+
+/* ---------- AUTH ---------- */
+const $=s=>document.querySelector(s);
+const getUsers=()=>JSON.parse(localStorage.getItem('clubhub_users')||'[]');
+const setUsers=u=>localStorage.setItem('clubhub_users',JSON.stringify(u));
+const setSession=u=>localStorage.setItem('clubhub_session',JSON.stringify(u));
+const getSession=()=>JSON.parse(localStorage.getItem('clubhub_session')||'null');
+let isSignup=false;
+
+function showErr(m){const e=$('#authErr');e.textContent=m;e.classList.remove('hidden');}
+function clearErr(){$('#authErr').classList.add('hidden');}
+
+function toggleAuth(){
+  isSignup=!isSignup;clearErr();
+  $('#loginForm').classList.toggle('hidden',isSignup);
+  $('#signupForm').classList.toggle('hidden',!isSignup);
+  $('#authSub').textContent=isSignup?'Create your club account':'Sign in to manage your club';
+  $('#authSwitch').innerHTML=isSignup
+    ?'Already have an account? <a onclick="toggleAuth()">Sign in</a>'
+    :"Don't have an account? <a onclick=\"toggleAuth()\">Sign up</a>";
+}
+
+function doSignup(){
+  clearErr();
+  const name=$('#su-name').value.trim(),club=$('#su-club').value.trim(),
+        email=$('#su-email').value.trim().toLowerCase(),pass=$('#su-pass').value;
+  if(!name||!email||!pass)return showErr('Please fill in all required fields.');
+  if(pass.length<6)return showErr('Password must be at least 6 characters.');
+  const users=getUsers();
+  if(users.find(u=>u.email===email))return showErr('An account with this email already exists.');
+  const user={name,club:club||'My Club',email,pass,role:'Club Admin',picture:null};
+  users.push(user);setUsers(users);
+  setSession(user);enterApp();
+}
+
+function doLogin(){
+  clearErr();
+  const email=$('#li-email').value.trim().toLowerCase(),pass=$('#li-pass').value;
+  if(!email||!pass)return showErr('Please enter your email and password.');
+  const user=getUsers().find(u=>u.email===email&&u.pass===pass);
+  if(!user)return showErr('Invalid email or password.');
+  setSession(user);enterApp();
+}
+
+function logout(){localStorage.removeItem('clubhub_session');location.reload();}
+
+/* ---------- GOOGLE SIGN-IN ---------- */
+function handleGoogleCredential(response){
+  try{
+    const payload=JSON.parse(atob(response.credential.split('.')[1]));
+    const user={name:payload.name,club:'My Club',email:payload.email,pass:null,
+                role:'Club Admin',picture:payload.picture||null};
+    const users=getUsers();
+    if(!users.find(u=>u.email===user.email)){users.push(user);setUsers(users);}
+    setSession(user);enterApp();
+  }catch(e){showErr('Google sign-in failed.');}
+}
+function googleDemo(){
+  const user={name:'Google User',club:'My Club',email:'google.user@gmail.com',
+              pass:null,role:'Club Admin',picture:null};
+  const users=getUsers();
+  if(!users.find(u=>u.email===user.email)){users.push(user);setUsers(users);}
+  setSession(user);enterApp();
+}
+function initGoogle(){
+  if(!GOOGLE_CLIENT_ID||typeof google==='undefined')return; // keep demo fallback
+  google.accounts.id.initialize({client_id:GOOGLE_CLIENT_ID,callback:handleGoogleCredential});
+  google.accounts.id.renderButton($('#gbtn-container'),{theme:'filled_black',size:'large',width:340,text:'continue_with'});
+  $('#gbtnFallback').classList.add('hidden'); // hide demo button, use real one
+}
+window.addEventListener('load',()=>setTimeout(initGoogle,600));
+
+/* ---------- ENTER APP ---------- */
+function enterApp(){
+  const u=getSession();if(!u)return;
+  $('#authScreen').classList.add('hidden');
+  $('#appScreen').classList.remove('hidden');
+  $('#sideName').textContent=u.name;
+  $('#sideRole').textContent=u.role;
+  $('#welcomeMsg').textContent=`Welcome back, ${u.name.split(' ')[0]} 👋 Here's what's happening at ${u.club}.`;
+  const av=$('#sideAvatar');
+  if(u.picture){av.innerHTML=`<img src="${u.picture}" alt="">`;}
+  else{av.textContent=u.name.split(' ').map(x=>x[0]).slice(0,2).join('').toUpperCase();}
+  renderAll();
 }
 
 /* ---------- RENDER ---------- */
-const $=s=>document.querySelector(s);
 const cap=w=>w[0].toUpperCase()+w.slice(1);
 const initials=n=>n.split(' ').map(x=>x[0]).slice(0,2).join('');
 
 function renderStats(){
   const s=[
-    {lbl:'Total Members',val:members.length+120,chg:'▲ 8% this month',cls:'up'},
-    {lbl:'Active Teams',val:teams.length,chg:'▲ 1 new',cls:'up'},
-    {lbl:'Fees Collected',val:'£4.28k',chg:'76% of target',cls:'up'},
-    {lbl:'Events This Week',val:events.length,chg:'2 games',cls:'up'},
+    {lbl:'Total Members',val:members.length+120},
+    {lbl:'Active Teams',val:teams.length},
+    {lbl:'Fees Collected',val:'£4.28k'},
+    {lbl:'News Posts',val:news.length},
   ];
-  $('#statCards').innerHTML=s.map(x=>`
-    <div class="stat"><div class="lbl">${x.lbl}</div>
-    <div class="val">${x.val}</div><div class="chg ${x.cls}">${x.chg}</div></div>`).join('');
+  $('#statCards').innerHTML=s.map(x=>`<div class="stat"><div class="lbl">${x.lbl}</div><div class="val">${x.val}</div><div class="chg up">▲ Updated</div></div>`).join('');
 }
 function eventRow(e){
-  return `<div class="row">
-    <div class="team-badge" style="background:${e.type==='game'?'#ef4444':e.type==='practice'?'#6366f1':'#22d3ee'}">
-      ${e.type==='game'?'⚽':e.type==='practice'?'🏃':'💬'}</div>
-    <div><div class="name">${e.title}</div><div class="sub">${e.date} · ${e.loc}</div></div>
-    <span class="pill ${e.type}">${cap(e.type)}</span></div>`;
+  return `<div class="row"><div class="team-badge" style="background:${e.type==='game'?'#ef4444':e.type==='practice'?'#6366f1':'#22d3ee'}">${e.type==='game'?'⚽':e.type==='practice'?'🏃':'💬'}</div><div><div class="name">${e.title}</div><div class="sub">${e.date} · ${e.loc}</div></div><span class="pill ${e.type}">${cap(e.type)}</span></div>`;
 }
-function renderEvents(){
-  $('#dashEvents').innerHTML=events.slice(0,4).map(eventRow).join('');
-  $('#allEvents').innerHTML=events.map(eventRow).join('');
-}
-function renderTeams(){
-  $('#teamCards').innerHTML=teams.map((t,i)=>`
-    <div class="stat">
-      <div class="team-badge" style="background:${colors[i%colors.length]};margin-bottom:12px">${initials(t.name)}</div>
-      <div class="name" style="font-size:16px">${t.name}</div>
-      <div class="sub">${t.age}</div>
-      <div style="margin-top:10px;font-size:13px;color:var(--muted)">👥 ${t.members} members · 🎯 ${t.coach}</div>
-    </div>`).join('');
-}
-function renderMembers(){
-  $('#memberRows').innerHTML=members.map(m=>`
-    <tr><td style="display:flex;align-items:center;gap:10px">
-      <div class="avatar" style="width:30px;height:30px;font-size:12px">${initials(m.name)}</div>${m.name}</td>
-    <td>${m.role}</td><td>${m.team}</td>
-    <td><span class="pill ${m.status==='Active'?'paid':'due'}">${m.status}</span></td></tr>`).join('');
-}
-function renderPayments(){
-  $('#payRows').innerHTML=payments.map(p=>`
-    <tr><td>${p.name}</td><td>${p.desc}</td><td>${p.amt}</td>
-    <td><span class="pill ${p.status}">${cap(p.status)}</span></td></tr>`).join('');
-}
-function renderAll(){renderStats();renderEvents();renderTeams();renderMembers();renderPayments();}
+function renderEvents(){$('#dashEvents').innerHTML=events.slice(0,4).map(eventRow).join('');$('#allEvents').innerHTML=events.map(eventRow).join('');}
+function renderTeams(){$('#teamCards').innerHTML=teams.map((t,i)=>`<div class="stat"><div class="team-badge" style="background:${colors[i%colors.length]};margin-bottom:12px">${initials(t.name)}</div><div class="name" style="font-size:16px">${t.name}</div><div class="sub">${t.age}</div><div style="margin-top:10px;font-size:13px;color:var(--muted)">👥 ${t.members} members · 🎯 ${t.coach}</div></div>`).join('');}
+function renderMembers(){$('#memberRows').innerHTML=members.map(m=>`<tr><td style="display:flex;align-items:center;gap:10px"><div class="avatar" style="width:30px;height:30px;font-size:12px">${initials(m.name)}</div>${m.name}</td><td>${m.role}</td><td>${m.team}</td><td><span class="pill ${m.status==='Active'?'paid':'due'}">${m.status}</span></td></tr>`).join('');}
+function renderPayments(){$('#payRows').innerHTML=payments.map(p=>`<tr><td>${p.name}</td><td>${p.desc}</td><td>${p.amt}</td><td><span class="pill ${p.status}">${cap(p.status)}</span></td></tr>`).join('');}
+function newsCard(n){return `<div class="news-card"><div class="news-banner" style="background:${n.bg}">${n.emoji}</div><div class="news-body"><span class="news-date">${n.date}</span><h3>${n.title}</h3><p>${n.body}</p></div></div>`;}
+function renderNews(){$('#newsGrid').innerHTML=news.map(newsCard).join('');$('#dashNews').innerHTML=news.slice(0,2).map(n=>`<div class="row"><div class="team-badge" style="background:${n.bg}">${n.emoji}</div><div><div class="name">${n.title}</div><div class="sub">${n.date}</div></div></div>`).join('');}
+function renderAll(){renderStats();renderEvents();renderTeams();renderMembers();renderPayments();renderNews();}
 
 /* ---------- NAV ---------- */
-function go(view){
-  document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active',n.dataset.view===view));
-  document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id===view));
-}
+function go(view){document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active',n.dataset.view===view));document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id===view));}
 document.querySelectorAll('.nav-item').forEach(n=>n.onclick=()=>go(n.dataset.view));
 
 /* ---------- MODALS ---------- */
 const forms={
-  event:{title:'Add New Event',fields:`
-    <div class="field"><label>Title</label><input id="f1" placeholder="e.g. League Match"></div>
-    <div class="field"><label>Type</label><select id="f2"><option value="game">Game</option><option value="practice">Practice</option><option value="meeting">Meeting</option></select></div>
-    <div class="field"><label>Date & time</label><input id="f3" placeholder="Sat 26 Jul · 15:00"></div>
-    <div class="field"><label>Location</label><input id="f4" placeholder="Home Ground"></div>`,
-    save:()=>{events.unshift({title:v('f1')||'Untitled',type:v('f2'),date:v('f3')||'TBD',loc:v('f4')||'TBD'});persist();renderEvents();}},
-  team:{title:'Add New Team',fields:`
-    <div class="field"><label>Team name</label><input id="f1" placeholder="e.g. U16 Eagles"></div>
-    <div class="field"><label>Age group</label><input id="f2" placeholder="Under 16"></div>
-    <div class="field"><label>Head coach</label><input id="f3" placeholder="Coach name"></div>`,
-    save:()=>{teams.push({name:v('f1')||'New Team',age:v('f2')||'—',members:0,coach:v('f3')||'TBD'});persist();renderTeams();renderStats();}},
-  member:{title:'Add New Member',fields:`
-    <div class="field"><label>Full name</label><input id="f1" placeholder="Full name"></div>
-    <div class="field"><label>Role</label><select id="f2"><option>Player</option><option>Coach</option><option>Staff</option></select></div>
-    <div class="field"><label>Team</label><input id="f3" placeholder="Team name"></div>`,
-    save:()=>{members.push({name:v('f1')||'New Member',role:v('f2'),team:v('f3')||'Unassigned',status:'Active'});persist();renderMembers();renderStats();}},
+  event:{title:'Add New Event',fields:`<div class="field"><label>Title</label><input id="f1" placeholder="e.g. League Match"></div><div class="field"><label>Type</label><select id="f2"><option value="game">Game</option><option value="practice">Practice</option><option value="meeting">Meeting</option></select></div><div class="field"><label>Date & time</label><input id="f3" placeholder="Sat 26 Jul · 15:00"></div><div class="field"><label>Location</label><input id="f4" placeholder="Home Ground"></div>`,save:()=>{events.unshift({title:v('f1')||'Untitled',type:v('f2'),date:v('f3')||'TBD',loc:v('f4')||'TBD'});persist();renderEvents();renderStats();}},
+  team:{title:'Add New Team',fields:`<div class="field"><label>Team name</label><input id="f1" placeholder="e.g. U16 Eagles"></div><div class="field"><label>Age group</label><input id="f2" placeholder="Under 16"></div><div class="field"><label>Head coach</label><input id="f3" placeholder="Coach name"></div>`,save:()=>{teams.push({name:v('f1')||'New Team',age:v('f2')||'—',members:0,coach:v('f3')||'TBD'});persist();renderTeams();renderStats();}},
+  member:{title:'Add New Member',fields:`<div class="field"><label>Full name</label><input id="f1" placeholder="Full name"></div><div class="field"><label>Role</label><select id="f2"><option>Player</option><option>Coach</option><option>Staff</option></select></div><div class="field"><label>Team</label><input id="f3" placeholder="Team name"></div>`,save:()=>{members.push({name:v('f1')||'New Member',role:v('f2'),team:v('f3')||'Unassigned',status:'Active'});persist();renderMembers();}},
+  news:{title:'Post News',fields:`<div class="field"><label>Headline</label><input id="f1" placeholder="e.g. Big win at the weekend!"></div><div class="field"><label>Emoji / icon</label><input id="f2" placeholder="🏆" maxlength="2"></div><div class="field"><label>Details</label><input id="f3" placeholder="Write your announcement..."></div>`,save:()=>{const bgs=['linear-gradient(135deg,#f59e0b,#ef4444)','linear-gradient(135deg,#6366f1,#8b5cf6)','linear-gradient(135deg,#22c55e,#22d3ee)'];news.unshift({emoji:v('f2')||'📰',bg:bgs[Math.floor(Math.random()*bgs.length)],title:v('f1')||'Untitled',date:new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}),body:v('f3')||''});persist();renderNews();renderStats();}},
 };
 const v=id=>$('#'+id)?.value;
 let current=null;
-function openModal(type){
-  current=type;const f=forms[type];
-  $('#modalBox').innerHTML=`<h3>${f.title}</h3>${f.fields}
-    <div class="modal-actions">
-      <button class="btn ghost" onclick="closeModal()">Cancel</button>
-      <button class="btn" onclick="doSave()">Save</button></div>`;
-  $('#modalBg').classList.add('show');
-}
+function openModal(type){current=type;const f=forms[type];$('#modalBox').innerHTML=`<h3>${f.title}</h3>${f.fields}<div class="modal-actions"><button class="btn ghost" onclick="closeModal()">Cancel</button><button class="btn" onclick="doSave()">Save</button></div>`;$('#modalBg').classList.add('show');}
 function closeModal(){$('#modalBg').classList.remove('show')}
 function doSave(){forms[current].save();closeModal();}
 $('#modalBg').onclick=e=>{if(e.target.id==='modalBg')closeModal()};
 
-renderAll();
+/* ---------- BOOT ---------- */
+if(getSession())enterApp();
 
-/* ---------- PWA SERVICE WORKER (inline via Blob) ---------- */
-if ("serviceWorker" in navigator) {
-  const swCode = `
-    const CACHE="clubhub-v1";
-    self.addEventListener("install",e=>{self.skipWaiting();});
-    self.addEventListener("activate",e=>{self.clients.claim();});
-    self.addEventListener("fetch",e=>{
-      if(e.request.method!=="GET")return;
-      e.respondWith(
-        caches.open(CACHE).then(c=>
-          c.match(e.request).then(hit=>
-            hit || fetch(e.request).then(res=>{
-              try{c.put(e.request,res.clone());}catch(_){}
-              return res;
-            }).catch(()=>c.match(e.request))
-          )
-        )
-      );
-    });
-  `;
-  const blob = new Blob([swCode], { type: "application/javascript" });
-  const swUrl = URL.createObjectURL(blob);
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register(swUrl)
-      .then(() => console.log("ClubHub PWA: service worker active"))
-      .catch(err => console.warn("SW failed:", err));
-  });
+/* ---------- PWA SERVICE WORKER ---------- */
+if("serviceWorker" in navigator){
+  const swCode=`const C="clubhub-v1";self.addEventListener("install",e=>self.skipWaiting());self.addEventListener("activate",e=>self.clients.claim());self.addEventListener("fetch",e=>{if(e.request.method!=="GET")return;e.respondWith(caches.open(C).then(c=>c.match(e.request).then(h=>h||fetch(e.request).then(r=>{try{c.put(e.request,r.clone())}catch(_){}return r}).catch(()=>c.match(e.request)))))});`;
+  const url=URL.createObjectURL(new Blob([swCode],{type:"application/javascript"}));
+  window.addEventListener("load",()=>navigator.serviceWorker.register(url).catch(()=>{}));
 }
 </script>
 </body>
